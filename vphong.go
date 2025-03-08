@@ -381,8 +381,7 @@ func trans(word string, dialect string, chao bool, eight bool, nosuper bool, glo
 	return "", "", "", "", ""
 }
 
-// convert function
-func convert(word string, dialect string, chao bool, eight bool, nosuper bool, glottal bool, phonemic bool, delimit string) string {
+func Convert(word string, dialect string, chao bool, eight bool, nosuper bool, glottal bool, phonemic bool, delimit string) string {
 	ons, gli, nuc, cod, ton := trans(word, dialect, chao, eight, nosuper, glottal, phonemic)
 	if ons == "" && gli == "" && nuc == "" && cod == "" && ton == "" {
 		return "[" + word + "]"
@@ -397,8 +396,7 @@ func convert(word string, dialect string, chao bool, eight bool, nosuper bool, g
 	return delimit + strings.Join(filtered, delimit) + delimit
 }
 
-// main function
-func main() {
+func Run() {
 	dialect := flag.String("d", "n", "Specify dialect region (Northern=n, Central=c, Southern=s) or spelling pronunciation (o)")
 	chao := flag.Bool("c", false, "Phonetize tones as Chao values")
 	glottal := flag.Bool("g", false, "No glottal stops in underlying forms")
@@ -447,14 +445,14 @@ func main() {
 				}
 				var ipa []string
 				for _, part := range parts {
-					ipa = append(ipa, strings.TrimSpace(convert(part, *dialect, *chao, *eight, *nosuper, *glottal, *phonemic, *delimit)))
+					ipa = append(ipa, strings.TrimSpace(Convert(part, *dialect, *chao, *eight, *nosuper, *glottal, *phonemic, *delimit)))
 				}
 				seq = ""
 				for j := range ipa {
 					seq += ipa[j] + delimiters[j]
 				}
 			} else {
-				seq = strings.TrimSpace(convert(cleanWord, *dialect, *chao, *eight, *nosuper, *glottal, *phonemic, *delimit))
+				seq = strings.TrimSpace(Convert(cleanWord, *dialect, *chao, *eight, *nosuper, *glottal, *phonemic, *delimit))
 			}
 
 			if len(filteredWords) >= 2 {
