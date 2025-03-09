@@ -7,7 +7,7 @@ Author: Vuong Nguyen
 
 Web: https://github.com/yeungon/vphong
 
-**vPhong** is a phonetizer for Vietnamese orthography, written in Go, and inspired by the original **vPhon** by [James Kirby](https://github.com/kirbyj/vPhon) (perhaps best described as a folk implementation). This software converts UTF-8 Vietnamese text into phonetic transcriptions using the International Phonetic Association (IPA) alphabet. 
+**vPhong** is a phonetizer for Vietnamese orthography, is a folk implementation in Golang inspired by the original **vPhon** by [James Kirby](https://github.com/kirbyj/vPhon) (perhaps you might realize vPhon + Golang = vPhong). This software converts UTF-8 Vietnamese text into phonetic transcriptions using the International Phonetic Association (IPA) alphabet. 
 
 It supports the three major dialects of Vietnamese: Northern (Hà Nội), Central (Huế), and Southern (Sài Gòn) speech. Building on the foundation of vPhon, vPhong aims to provide an efficient and modern implementation for phonetic transcription in the Go programming language.
 

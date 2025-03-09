@@ -479,6 +479,68 @@ func Run() {
 	}
 }
 
-func SayHello(name string) string {
-	return fmt.Sprintf("Hello, %s!", name)
+// RunWithInput processes a string input directly without terminal or scanner.
+func RunWithInput(input string, dialect string, chao bool, eight bool, nosuper bool, glottal bool, phonemic bool, delimit string, outputOrtho string, tokenize bool) string {
+	if input == "" {
+		return ""
+	}
+
+	compound := ""
+	ortho := ""
+	words := strings.Fields(input) // Split input into words
+	var filteredWords []string
+	for _, word := range words {
+		if len(word) > 0 && word != "-" && word != "_" {
+			filteredWords = append(filteredWords, word)
+		}
+	}
+
+	for i, word := range filteredWords {
+		ortho += word
+		cleanWord := strings.TrimFunc(word, func(r rune) bool {
+			return unicode.IsPunct(r)
+		})
+		cleanWord = strings.ToLower(cleanWord)
+
+		var seq string
+		if tokenize && (strings.Contains(word, "-") || strings.Contains(word, "_")) {
+			parts := strings.FieldsFunc(cleanWord, func(r rune) bool {
+				return r == '-' || r == '_'
+			})
+			delimiters := strings.FieldsFunc(cleanWord, func(r rune) bool {
+				return !(r == '-' || r == '_')
+			})
+			if len(delimiters) < len(parts) {
+				delimiters = append(delimiters, "")
+			}
+			var ipa []string
+			for _, part := range parts {
+				ipa = append(ipa, strings.TrimSpace(Convert(part, dialect, chao, eight, nosuper, glottal, phonemic, delimit)))
+			}
+			seq = ""
+			for j := range ipa {
+				seq += ipa[j] + delimiters[j]
+			}
+		} else {
+			seq = strings.TrimSpace(Convert(cleanWord, dialect, chao, eight, nosuper, glottal, phonemic, delimit))
+		}
+
+		if len(filteredWords) >= 2 {
+			ortho += " "
+		}
+		if i < len(filteredWords)-1 {
+			seq += " "
+		}
+		compound += seq
+	}
+
+	if ortho != "" {
+		ortho = strings.TrimSpace(ortho)
+		if outputOrtho != "" {
+			return ortho + outputOrtho + compound
+		}
+		return compound
+	}
+
+	return ""
 }
