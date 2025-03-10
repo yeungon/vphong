@@ -3,21 +3,30 @@ package vphong
 import "testing"
 
 func TestRunWithInput(t *testing.T) {
-	input := "xin chào việt nam"
-	result := RunWithInput(input, "n", false, false, false, false, false, "", "", false)
-	wanted := "siːnᴬ¹ tɕaːwᴬ¹ viətᴰ¹ naːmᴬ¹"
-	if result != wanted {
-		t.Errorf("wanted: %s, got: %s", wanted, result)
-	} else {
-		t.Logf("wanted: %s, got: %s", wanted, result)
-	}
-	input2 := "đầu lòng hai ả Tố Nga"
-	result2 := RunWithInput(input2, "n", false, false, false, false, false, "", "", false)
-	wanted2 := "ɗəwᴮ¹ lɔŋ͡mᴬ¹ haːjᴬ¹ ʔaːᴮ¹ toːᴮ¹ ŋaːᴬ¹"
-	if result2 != wanted2 {
-		t.Errorf("wanted: %s, got: %s", wanted, result)
-	} else {
-		t.Logf("wanted: %s, got: %s", wanted, result)
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    "xin chào việt nam",
+			expected: "siːnᴬ¹ tɕaːwᴬ¹ viətᴰ¹ naːmᴬ¹",
+		},
+		{
+			input:    "đầu lòng hai ả Tố Nga",
+			expected: "ɗəwᴮ¹ lɔŋ͡mᴬ¹ haːjᴬ¹ ʔaːᴮ¹ toːᴮ¹ ŋaːᴬ¹",
+		},
+		{
+			input:    "na nga ca cá cha",
+			expected: "naːᴬ¹ ŋaːᴬ¹ kaːᴬ¹ kaːᴬ¹ tɕaːᴬ¹",
+		},
 	}
 
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			result := RunWithInput(tc.input, "n", false, false, false, false, false, "", "", false)
+			if result != tc.expected {
+				t.Errorf("wanted: %s, got: %s", tc.expected, result)
+			}
+		})
+	}
 }

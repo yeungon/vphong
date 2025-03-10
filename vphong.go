@@ -56,15 +56,50 @@ func trans(word string, dialect string, chao bool, eight bool, nosuper bool, glo
 	length := len(word)
 
 	if length > 0 {
-		if val, ok := onsets[word[0:3]]; ok && length >= 3 {
-			ons = val
-			oOffset = 3
-		} else if val, ok := onsets[word[0:2]]; ok && length >= 2 {
-			ons = val
-			oOffset = 2
-		} else if val, ok := onsets[word[0:1]]; ok {
-			ons = val
-			oOffset = 1
+
+		//fmt.Printf("đang xử lý:  %s ", word)
+		//fmt.Printf("length:  %d ", len(word))
+
+		//if val, ok := onsets[word[0:3]]; ok && length >= 3 {
+		//	ons = val
+		//	oOffset = 3
+		//} else if val, ok := onsets[word[0:2]]; ok && length >= 2 {
+		//	ons = val
+		//	oOffset = 2
+		//} else if val, ok := onsets[word[0:1]]; ok {
+		//	ons = val
+		//	oOffset = 1
+		//}
+
+		if length >= 3 {
+			if val, ok := onsets[word[0:3]]; ok {
+				ons = val
+				oOffset = 3
+			} else if val, ok := onsets[word[0:2]]; ok {
+				ons = val
+				oOffset = 2
+			} else if val, ok := onsets[word[0:1]]; ok {
+				ons = val
+				oOffset = 1
+			}
+		} else if length == 2 {
+			if val, ok := onsets[word[0:2]]; ok {
+				ons = val
+				oOffset = 2
+			} else if val, ok := onsets[word[0:1]]; ok {
+				ons = val
+				oOffset = 1
+			}
+		} else if length == 1 {
+			if val, ok := onsets[word[0:1]]; ok {
+				ons = val
+				oOffset = 1
+			}
+		}
+		// Optional: Add a default case if no match is found
+		if oOffset == 0 { // Assuming oOffset starts at 0 if unset
+			ons = ""    // Default value (adjust based on your needs)
+			oOffset = 0 // Or some other default
 		}
 
 		if val, ok := codas[word[length-2:length]]; ok && length >= 2 {
