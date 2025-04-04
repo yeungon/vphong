@@ -134,8 +134,9 @@ var onoffglides = map[string]string{
 }
 
 var codas = map[string]string{
-	"c":  "k",
-	"ch": "c",
+	"c": "k",
+	//"ch": "c",
+	"ch": "k",
 	"k":  "k",
 	"m":  "m",
 	"n":  "n",
