@@ -23,6 +23,7 @@ func TestRunWithInput(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
+			t.Parallel() // Mark this subtest as parallel
 			result := RunWithInput(tc.input, "n", false, false, false, false, false, "", "", false)
 			if result != tc.expected {
 				t.Errorf("wanted: %s, got: %s", tc.expected, result)

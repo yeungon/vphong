@@ -17,13 +17,9 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 	qu := CusQu
 	gi := CusGi
 
-	var tones map[string]string
+	var tones map[string]int
 	if pham || cao {
-		tonesP := CusTonesP
-		tones = make(map[string]string)
-		for k, v := range tonesP {
-			tones[k] = fmt.Sprintf("%d", v) // Single-digit tone (1-6)
-		}
+		tones = CusTonesP
 	}
 
 	ons, nuc, cod, ton := "", "", "", "1" // Default tone is "1"
@@ -107,16 +103,21 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 			cod = "c"
 		}
 
-		// Tones
-		var toneList []string
-		for i := 0; i < l; i++ {
-			if t, ok := tones[string(word[i])]; ok {
-				toneList = append(toneList, t)
+		// Tones detection
+		if tones != nil {
+			toneChar := ""
+			nucl := word[oOffset : l-cOffset]
+			for _, r := range nucl {
+				s := string(r)
+				if _, ok := tones[s]; ok {
+					toneChar = s
+					break
+				}
+			}
+			if toneChar != "" {
+				ton = fmt.Sprintf("%d", tones[toneChar])
 			}
 		}
-		if len(toneList) > 0 {
-			ton = toneList[len(toneList)-1] // Use last detected tone (single digit)
-		} // Default "1" is already set if no tone is found
 
 		// Modifications for closed syllables
 		if cOffset != 0 {
@@ -126,14 +127,6 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 				}
 				if ton == "6" && contains([]string{"p", "t", "k"}, cod) {
 					ton = "6b"
-				}
-			}
-			if contains([]string{"u", "o", "ɔ"}, nuc) {
-				if cod == "ŋ" {
-					cod = "ŋ͡m"
-				}
-				if cod == "k" {
-					cod = "k͡p"
 				}
 			}
 		}
