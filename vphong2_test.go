@@ -31,8 +31,8 @@ func TestVphong2(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
-			t.Parallel()                                                      // Mark this subtest as parallel
-			result := ConvertSentence(tc.input, true, true, false, false, "") // Use ConvertSentence
+			t.Parallel()                                        // Mark this subtest as parallel
+			result := ConvertSentence(tc.input, true, true, "") // Use ConvertSentence
 			if result != tc.expected {
 				t.Errorf("wanted: %s, got: %s", tc.expected, result)
 			}

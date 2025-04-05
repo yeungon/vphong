@@ -36,7 +36,7 @@ func DetectCoda(l int, word string, codas map[string]string) (string, int) {
 }
 
 // Trans converts a Vietnamese word to its phonetic components based on options
-func Trans(word string, glottal, pham, cao, palatals bool) (string, string, string, string) {
+func Trans(word string, glottal, palatals bool) (string, string, string, string) {
 	// Use custom maps directly
 	onsets := CusOnsets
 	nuclei := CusNuclei
@@ -47,11 +47,7 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 	specialCases := CusSpecialVan
 	qu := CusQu
 	gi := CusGi
-
-	var tones map[string]int
-	if pham || cao {
-		tones = CusTonesP
-	}
+	tones := CusTonesP
 
 	fmt.Println("specialCases", specialCases)
 	ons, nuc, cod, ton := "", "", "", "1" // Default tone is "1"
@@ -71,7 +67,7 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 		} else {
 			nucl := word[oOffset : l-cOffset]
 
-			fmt.Printf("word và nucl %s và %s\n", word, nucl)
+			fmt.Printf("word và [[nucl]] </b> %s và %s\n", word, nucl)
 
 			switch {
 			case nuclei[nucl] != "":
@@ -138,26 +134,15 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 			}
 		}
 
-		// Modifications for closed syllables
-		if cOffset != 0 {
-			if cao {
-				if ton == "5" && contains([]string{"p", "t", "k"}, cod) {
-					ton = "5b"
-				}
-				if ton == "6" && contains([]string{"p", "t", "k"}, cod) {
-					ton = "6b"
-				}
-			}
-		}
 	}
 
 	return ons, nuc, cod, ton
 }
 
 // ConvertCustomize converts a Vietnamese word to IPA with a delimiter
-func ConvertCustomize(word string, glottal, pham, cao, palatals bool, delimit string) string {
+func ConvertCustomize(word string, glottal, palatals bool, delimit string) string {
 	word = strings.ToLower(word)
-	ons, nuc, cod, ton := Trans(word, glottal, pham, cao, palatals)
+	ons, nuc, cod, ton := Trans(word, glottal, palatals)
 	if ons == "" && nuc == "" && cod == "" && ton == "" {
 		return "[" + word + "]"
 	}
@@ -172,7 +157,7 @@ func ConvertCustomize(word string, glottal, pham, cao, palatals bool, delimit st
 }
 
 // ConvertSentence converts a Vietnamese sentence to IPA with a delimiter for each word
-func ConvertSentence(sentence string, glottal, pham, cao, palatals bool, delimit string) string {
+func ConvertSentence(sentence string, glottal, palatals bool, delimit string) string {
 	// Split the sentence into words
 	words := strings.Fields(sentence)
 	if len(words) == 0 {
@@ -182,7 +167,7 @@ func ConvertSentence(sentence string, glottal, pham, cao, palatals bool, delimit
 	// Convert each word to IPA
 	var converted []string
 	for _, word := range words {
-		ipa := ConvertCustomize(word, glottal, pham, cao, palatals, delimit)
+		ipa := ConvertCustomize(word, glottal, palatals, delimit)
 		converted = append(converted, ipa)
 	}
 
