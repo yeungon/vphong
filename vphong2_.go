@@ -5,6 +5,36 @@ import (
 	"strings"
 )
 
+func DetectOnset(l int, word string, onsets map[string]string) (string, int) {
+	var ons string
+	var oOffset int
+	// Onset detection
+	if l >= 3 && onsets[word[0:3]] != "" {
+		ons = onsets[word[0:3]]
+		oOffset = 3
+	} else if l >= 2 && onsets[word[0:2]] != "" {
+		ons = onsets[word[0:2]]
+		oOffset = 2
+	} else if onsets[word[0:1]] != "" {
+		ons = onsets[word[0:1]]
+		oOffset = 1
+	}
+	return ons, oOffset
+}
+
+func DetectCoda(l int, word string, codas map[string]string) (string, int) {
+	var cod string
+	var cOffset int
+	if l >= 2 && codas[word[l-2:l]] != "" {
+		cod = codas[word[l-2:l]]
+		cOffset = 2
+	} else if codas[word[l-1:l]] != "" {
+		cod = codas[word[l-1:l]]
+		cOffset = 1
+	}
+	return cod, cOffset
+}
+
 // Trans converts a Vietnamese word to its phonetic components based on options
 func Trans(word string, glottal, pham, cao, palatals bool) (string, string, string, string) {
 	// Use custom maps directly
@@ -14,6 +44,7 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 	onglides := CusOnglides
 	offglides := CusOffglides
 	onoffglides := CusOnoffglides
+	specialCases := CusSpecialVan
 	qu := CusQu
 	gi := CusGi
 
@@ -22,31 +53,16 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 		tones = CusTonesP
 	}
 
+	fmt.Println("specialCases", specialCases)
 	ons, nuc, cod, ton := "", "", "", "1" // Default tone is "1"
 	oOffset, cOffset := 0, 0
 	l := len(word)
 
 	if l > 0 {
 		// Onset detection
-		if l >= 3 && onsets[word[0:3]] != "" {
-			ons = onsets[word[0:3]]
-			oOffset = 3
-		} else if l >= 2 && onsets[word[0:2]] != "" {
-			ons = onsets[word[0:2]]
-			oOffset = 2
-		} else if onsets[word[0:1]] != "" {
-			ons = onsets[word[0:1]]
-			oOffset = 1
-		}
-
+		ons, oOffset = DetectOnset(l, word, onsets)
 		// Coda detection
-		if l >= 2 && codas[word[l-2:l]] != "" {
-			cod = codas[word[l-2:l]]
-			cOffset = 2
-		} else if codas[word[l-1:l]] != "" {
-			cod = codas[word[l-1:l]]
-			cOffset = 1
-		}
+		cod, cOffset = DetectCoda(l, word, codas)
 
 		// Nucleus and special cases
 		if gi[word[0:2]] != "" && cod != "" && l == 3 {
@@ -54,6 +70,9 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 			ons = "z"
 		} else {
 			nucl := word[oOffset : l-cOffset]
+
+			fmt.Printf("word và nucl %s và %s\n", word, nucl)
+
 			switch {
 			case nuclei[nucl] != "":
 				if oOffset == 0 {
@@ -137,6 +156,7 @@ func Trans(word string, glottal, pham, cao, palatals bool) (string, string, stri
 
 // ConvertCustomize converts a Vietnamese word to IPA with a delimiter
 func ConvertCustomize(word string, glottal, pham, cao, palatals bool, delimit string) string {
+	word = strings.ToLower(word)
 	ons, nuc, cod, ton := Trans(word, glottal, pham, cao, palatals)
 	if ons == "" && nuc == "" && cod == "" && ton == "" {
 		return "[" + word + "]"

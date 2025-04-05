@@ -149,6 +149,20 @@ var CusCodas = map[string]string{
 	"p": "p", "t": "t", "c": "k", "m": "m", "n": "n", "ng": "ŋ", "nh": "ŋ", "ch": "k",
 }
 
+var SpecialVan = []string{"anh", "ành", "ãnh", "ảnh", "ánh", "ạnh"}
+
+// Special cases, new idea to handle edge cases in Vietnamese
+var CusSpecialVan = map[string]string{
+	"anh": "ɛŋ",
+	"ành": "ɛŋ",
+	"ãnh": "ɛŋ",
+	"ảnh": "ɛŋ",
+	"ánh": "ɛŋ",
+	"ạnh": "ɛŋ",
+	"ách": "ɛk",
+	"ạch": "ɛk",
+}
+
 // CusTonesP maps Vietnamese tones to their numerical representations
 var CusTonesP = map[string]int{
 	"á": 5, "à": 2, "ả": 4, "ã": 3, "ạ": 6,

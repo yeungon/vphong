@@ -417,6 +417,7 @@ func trans(word string, dialect string, chao bool, eight bool, nosuper bool, glo
 }
 
 func Convert(word string, dialect string, chao bool, eight bool, nosuper bool, glottal bool, phonemic bool, delimit string) string {
+	word = strings.ToLower(word)
 	ons, gli, nuc, cod, ton := trans(word, dialect, chao, eight, nosuper, glottal, phonemic)
 	if ons == "" && gli == "" && nuc == "" && cod == "" && ton == "" {
 		return "[" + word + "]"
