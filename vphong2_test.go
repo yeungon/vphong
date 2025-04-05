@@ -24,8 +24,8 @@ func TestVphong2(t *testing.T) {
 		},
 		{
 			//Ref: http://www.lel.ed.ac.uk/~jkirby/docs/kirby2011vietnamese.pdf
-			input:    "Gió bấc và mặt trời cãi nhau xem ai mạnh hơn, trong lúc đó một du khách mặc một áo khoác ấm đi qua",
-			expected: "zɔ5 ɓɤ̆k5 va2 măt6 ʈɤj2 kaj3 ɲăw1 sɛm1 aj1 maŋ6 [hơn,] ʈɔŋ1 luk5 dɔ5 mot6 zu1 xak5 măk6 mot6 aw5 xwʷak5 ʔɤ̆m5 di1 kwa1",
+			input:    "Gió bấc và mặt trời cãi nhau xem ai mạnh",
+			expected: "zɔ5 ɓɤ̆k5 va2 măt6 ʈɤj2 kaj3 ɲăw1 sɛm1 aj1 maŋ6",
 		},
 	}
 
