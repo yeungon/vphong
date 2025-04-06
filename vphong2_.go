@@ -46,36 +46,28 @@ func Trans(word string, glottal, palatals bool) (string, string, string, string)
 	// Use custom maps directly
 	onsets := CusOnsets
 	nuclei := CusNuclei
-	codas := CusCodas
+	codasMap := CusCodasMap
 	onglides := CusOnglides
 	offglides := CusOffglides
 	onoffglides := CusOnoffglides
-	//specialCases := CusSpecialVan
+	//specialCases := CusSpecialRhyme
 	qu := CusQu
 	gi := CusGi
 	tones := CusTonesP
 
 	//fmt.Println("specialCases", specialCases)
-	ons, nuc, cod, ton := "", "", "", "1" // Default tone is "1"
+	ons_ipa, nuc_ipa, cod_ipa, ton_ipa := "", "", "", "1" // Default tone is "1"
 	oOffset, cOffset := 0, 0
 	l := len(word)
 
 	if l > 0 {
-		// Onset detection
-		ons, oOffset = DetectOnset(l, word, onsets)
-		// Coda detection
-		cod, cOffset = DetectCoda(l, word, codas)
-		//Nucleus and special cases
-		ons, nuc, cod = EdgeCases(gi, word, l, ons, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod, true)
-		// Palatals logic (vòm hóa, ngạc hóa)
-		if palatals && contains([]string{"i", "e", "ɛ"}, nuc) && cod == "k" {
-			cod = "c"
-		}
-		// Tones detection
-		ton = DetecTone(tones, word, l, oOffset, cOffset)
+		ons_ipa, oOffset = DetectOnset(l, word, onsets)
+		cod_ipa, cOffset = DetectConsotantCoda(l, word, codasMap)
+		ons_ipa, nuc_ipa, cod_ipa = DetectEdgeCases(gi, word, l, ons_ipa, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod_ipa, true)
+		ton_ipa = DetecTone(tones, word, l, oOffset, cOffset)
 
 	}
-	return ons, nuc, cod, ton
+	return ons_ipa, nuc_ipa, cod_ipa, ton_ipa
 }
 
 func DetectOnset(l int, word string, onsets map[string]string) (string, int) {
@@ -92,10 +84,12 @@ func DetectOnset(l int, word string, onsets map[string]string) (string, int) {
 		ons = onsets[word[0:1]]
 		oOffset = 1
 	}
+
+	fmt.Printf("line 92: từ: %s || ons: %s || oOffset: %v\n", word, ons, oOffset)
 	return ons, oOffset
 }
 
-func DetectCoda(l int, word string, codas map[string]string) (string, int) {
+func DetectConsotantCoda(l int, word string, codas map[string]string) (string, int) {
 	var cod string
 	var cOffset int
 	if l >= 2 && codas[word[l-2:l]] != "" {
@@ -105,6 +99,7 @@ func DetectCoda(l int, word string, codas map[string]string) (string, int) {
 		cod = codas[word[l-1:l]]
 		cOffset = 1
 	}
+	// fmt.Printf("line 110: từ: %s || cod: %s\n", word, cod)
 	return cod, cOffset
 }
 
@@ -126,10 +121,9 @@ func DetecTone(tones map[string]int, word string, l int, oOffset int, cOffset in
 			return ton
 		}
 	}
-
 	return "1"
 }
-func EdgeCases(
+func DetectEdgeCases(
 	gi map[string]string,
 	word string,
 	wordLen int,
@@ -199,6 +193,22 @@ func EdgeCases(
 		return "", "", "" // Non-Vietnamese or unrecognized word
 	}
 
+	runes := []rune(word)
+	if len(runes) >= 3 {
+		specialEnding := string(runes[len(runes)-3:])
+		flag := contains(SpecialRhyme, specialEnding)
+		if flag {
+			fmt.Printf("specialEnding: %s || flag: %t\n", specialEnding, flag)
+			nucleus = "ɛ"
+		}
+
+	}
+
+	//specialCases := nucleus + coda
+
+	//fmt.Printf("edgecases: line 204: từ: %s||nuc %s || coda: %s ||flag: %t || special : %s\n", word, nucleus, coda, flag, specialCases)
+
+	fmt.Printf("edgecases: line 204: từ: %s||nuc %s || coda: %s\n", word, nucleus, coda)
 	return onset, nucleus, coda
 }
 

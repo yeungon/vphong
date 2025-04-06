@@ -4,6 +4,34 @@ import (
 	"testing"
 )
 
+//onsets[word[0:3]]
+
+func TestVphong2CusOnsets(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    CusOnsets["bánh"[0:1]],
+			expected: "ɓ",
+		},
+		{
+			input:    CusOnsets["kiến"[0:1]],
+			expected: "k",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			t.Parallel()
+			result := tc.input
+			if result != tc.expected {
+				t.Errorf("wanted: %s, got: %s", tc.expected, result)
+			}
+		})
+	}
+}
+
 func TestVphong2(t *testing.T) {
 	testCases := []struct {
 		input    string
@@ -16,16 +44,16 @@ func TestVphong2(t *testing.T) {
 		{
 			input: "na nga ca cá cha bánh canh cá lọc",
 			// bánh canh need to fixed
-			expected: "na1 ŋa1 ka1 ka5 ca1 ɓaŋ5 kaŋ1 ka5 lɔk6",
+			expected: "na1 ŋa1 ka1 ka5 ca1 ɓɛŋ5 kɛŋ1 ka5 lɔk6",
 		},
 		{
-			input:    "gió mùa màu đông ",
-			expected: "zɔ5 muo2 măw2 doŋ1",
+			input:    "cải cay sạch sành sanh đau tay",
+			expected: "kaj4 kăj1 ʂɛk6 ʂɛŋ2 ʂɛŋ1 dăw1 tăj1",
 		},
 		{
 			//Ref: http://www.lel.ed.ac.uk/~jkirby/docs/kirby2011vietnamese.pdf
-			input:    "Gió bấc và mặt trời cãi nhau xem ai mạnh",
-			expected: "zɔ5 ɓɤ̆k5 va2 măt6 ʈɤj2 kaj3 ɲăw1 sɛm1 aj1 maŋ6",
+			input:    "Gió bấc và mặt trời cãi nhau xem ai mạnh mạng",
+			expected: "zɔ5 ɓɤ̆k5 va2 măt6 ʈɤj2 kaj3 ɲăw1 sɛm1 aj1 mɛŋ6 maŋ6",
 		},
 	}
 

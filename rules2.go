@@ -1,20 +1,5 @@
 package vphong
 
-// RimeTone represents all possible rime tones in Vietnamese
-var RimeTone = []string{
-	"a", "ă", "â", "e", "ê", "i", "o", "ô", "ơ", "u", "ư", "y", "iê", "oa", "oă", "oe", "oo", "uâ", "uê", "uô", "uơ", "uy", "ươ", "uyê", "yê", // blank
-	"á", "ắ", "ấ", "é", "ế", "í", "ó", "ố", "ớ", "ú", "ứ", "ý", "iế", "óa", "oắ", "óe", "oó", "uấ", "uế", "uố", "ướ", "úy", "ướ", "uyế", "yế", // grave
-	"oá", "oé", "óo", "uý",
-	"à", "ằ", "ầ", "è", "ề", "ì", "ò", "ồ", "ờ", "ù", "ừ", "ỳ", "iề", "òa", "oằ", "òe", "oò", "uầ", "uề", "uồ", "ườ", "ùy", "ườ", "uyề", "yề", // acute
-	"oà", "oè", "òo", "uỳ",
-	"ả", "ẳ", "ẩ", "ẻ", "ể", "ỉ", "ỏ", "ổ", "ở", "ủ", "ử", "ỷ", "iểu", "ỏa", "oẳ", "ỏe", "oỏ", "uẩ", "uể", "uổ", "ưở", "ủy", "ưở", "uyể", "yể", // hook
-	"oả", "oẻ", "ỏo", "uỷ",
-	"ã", "ẵ", "ẫ", "ẽ", "ễ", "ĩ", "õ", "ỗ", "ỡ", "ũ", "ữ", "ỹ", "iễ", "õa", "oẵ", "õe", "oõ", "uẫ", "uễ", "uỗ", "ưỡ", "ũy", "ưỡ", "uyễ", "yễ", // tilde
-	"oã", "oẽ", "õo", "uỹ",
-	"ạ", "ặ", "ậ", "ẹ", "ệ", "ị", "ọ", "ộ", "ợ", "ụ", "ự", "ỵ", "iệ", "ọa", "oặ", "ọe", "oọ", "uậ", "uệ", "uệ", "ượ", "ụy", "ượ", "uyệ", "yệ", // dot
-	"oạ", "oẹ", "ọo", "uỵ",
-}
-
 // Onset represents all possible onsets in Vietnamese
 var Onset = []string{
 	"b", "d", "h", "l", "m", "n", "p", "r", "s", "t", "v", "x", "đ", "p",
@@ -51,6 +36,16 @@ var CusOnsets = map[string]string{
 	"g":   "ɣ",
 	"gh":  "ɣ",
 	"h":   "h",
+}
+
+// CusGi maps "gi" and its tones to IPA
+var CusGi = map[string]string{
+	"gi": "zi", "gí": "zi", "gì": "zi", "gỉ": "zi", "gĩ": "zi", "gị": "zi",
+}
+
+// CusQu maps "quy" and its tones to IPA
+var CusQu = map[string]string{
+	"quy": "kwi", "qúy": "kwi", "qùy": "kwi", "qủy": "kwi", "qũy": "kwi", "qụy": "kwi",
 }
 
 // CusNuclei maps Vietnamese nuclei (vowels) to their IPA equivalents
@@ -145,23 +140,11 @@ var CusOnoffglides = map[string]string{
 }
 
 // CusCodas maps Vietnamese codas to their IPA equivalents
-var CusCodas = map[string]string{
+var CusCodasMap = map[string]string{
 	"p": "p", "t": "t", "c": "k", "m": "m", "n": "n", "ng": "ŋ", "nh": "ŋ", "ch": "k",
 }
 
-var SpecialVan = []string{"anh", "ành", "ãnh", "ảnh", "ánh", "ạnh"}
-
-// Special cases, new idea to handle edge cases in Vietnamese
-var CusSpecialVan = map[string]string{
-	"anh": "ɛŋ",
-	"ành": "ɛŋ",
-	"ãnh": "ɛŋ",
-	"ảnh": "ɛŋ",
-	"ánh": "ɛŋ",
-	"ạnh": "ɛŋ",
-	"ách": "ɛk",
-	"ạch": "ɛk",
-}
+var SpecialRhyme = []string{"anh", "ành", "ãnh", "ảnh", "ánh", "ạnh", "ách", "ạch"}
 
 // CusTonesP maps Vietnamese tones to their numerical representations
 var CusTonesP = map[string]int{
@@ -179,14 +162,19 @@ var CusTonesP = map[string]int{
 	"ý": 5, "ỳ": 2, "ỷ": 4, "ỹ": 3, "ỵ": 6,
 }
 
-// CusGi maps "gi" and its tones to IPA
-var CusGi = map[string]string{
-	"gi": "zi", "gí": "zi", "gì": "zi", "gỉ": "zi", "gĩ": "zi", "gị": "zi",
-}
-
-// CusQu maps "quy" and its tones to IPA
-var CusQu = map[string]string{
-	"quy": "kwi", "qúy": "kwi", "qùy": "kwi", "qủy": "kwi", "qũy": "kwi", "qụy": "kwi",
+// RimeTone represents all possible rime tones in Vietnamese
+var RimeTone = []string{
+	"a", "ă", "â", "e", "ê", "i", "o", "ô", "ơ", "u", "ư", "y", "iê", "oa", "oă", "oe", "oo", "uâ", "uê", "uô", "uơ", "uy", "ươ", "uyê", "yê", // blank
+	"á", "ắ", "ấ", "é", "ế", "í", "ó", "ố", "ớ", "ú", "ứ", "ý", "iế", "óa", "oắ", "óe", "oó", "uấ", "uế", "uố", "ướ", "úy", "ướ", "uyế", "yế", // grave
+	"oá", "oé", "óo", "uý",
+	"à", "ằ", "ầ", "è", "ề", "ì", "ò", "ồ", "ờ", "ù", "ừ", "ỳ", "iề", "òa", "oằ", "òe", "oò", "uầ", "uề", "uồ", "ườ", "ùy", "ườ", "uyề", "yề", // acute
+	"oà", "oè", "òo", "uỳ",
+	"ả", "ẳ", "ẩ", "ẻ", "ể", "ỉ", "ỏ", "ổ", "ở", "ủ", "ử", "ỷ", "iểu", "ỏa", "oẳ", "ỏe", "oỏ", "uẩ", "uể", "uổ", "ưở", "ủy", "ưở", "uyể", "yể", // hook
+	"oả", "oẻ", "ỏo", "uỷ",
+	"ã", "ẵ", "ẫ", "ẽ", "ễ", "ĩ", "õ", "ỗ", "ỡ", "ũ", "ữ", "ỹ", "iễ", "õa", "oẵ", "õe", "oõ", "uẫ", "uễ", "uỗ", "ưỡ", "ũy", "ưỡ", "uyễ", "yễ", // tilde
+	"oã", "oẽ", "õo", "uỹ",
+	"ạ", "ặ", "ậ", "ẹ", "ệ", "ị", "ọ", "ộ", "ợ", "ụ", "ự", "ỵ", "iệ", "ọa", "oặ", "ọe", "oọ", "uậ", "uệ", "uệ", "ượ", "ụy", "ượ", "uyệ", "yệ", // dot
+	"oạ", "oẹ", "ọo", "uỵ",
 }
 
 // Based on: https://github.com/v-nhandt21/Viphoneme/blob/master/viphoneme/T2IPA.py
