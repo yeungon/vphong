@@ -1,582 +1,223 @@
 package vphong
 
 import (
-	"bufio"
-	"flag"
 	"fmt"
-	"os"
 	"strings"
-	"unicode"
 )
 
-// trans function
-func trans(word string, dialect string, chao bool, eight bool, nosuper bool, glottal bool, phonemic bool) (string, string, string, string, string) {
-	var eightTones map[string]string
-	if nosuper {
-		eightTones = eightLower
-	} else {
-		eightTones = eightSuper
+// ConvertSentence converts a Vietnamese sentence to IPA with a delimiter for each word
+func ConvertSentence(sentence string, glottal, palatals bool, delimit string) string {
+	// Split the sentence into words
+	words := strings.Fields(sentence)
+	if len(words) == 0 {
+		return ""
 	}
 
-	var chaoTones map[string]string
-	switch dialect {
-	case "s":
-		if nosuper {
-			chaoTones = ChaoSLower
-		} else {
-			chaoTones = ChaoSSuper
-		}
-	case "c":
-		if nosuper {
-			chaoTones = ChaoCLower
-		} else {
-			chaoTones = ChaoCSuper
-		}
-	default:
-		if nosuper {
-			chaoTones = ChaoNLower
-		} else {
-			chaoTones = ChaoNSuper
-		}
+	// Convert each word to IPA
+	var converted []string
+	for _, word := range words {
+		ipa := ConvertCustomize(word, glottal, palatals, delimit)
+		converted = append(converted, ipa)
 	}
 
-	ldNas := "ŋ͡m" // if nosuper else "ŋᵐ"
-	ldPlo := "k͡p" // if nosuper else "kᵖ"
-	palNas := "ɲ"  // if nosuper else "ʲŋ"
-	palPlo := "c"  // if nosuper else "ʲk"
-	lvGli := "w"   // if nosuper else "ʷ"
-
-	if nosuper {
-		onsets["th"] = "th"
-		onsets["qu"] = "kw"
-	}
-
-	var ons, gli, nuc, cod, ton string
-	oOffset, cOffset := 0, 0
-	length := len(word)
-
-	if length > 0 {
-
-		//fmt.Printf("đang xử lý:  %s ", word)
-		//fmt.Printf("length:  %d ", len(word))
-
-		//if val, ok := onsets[word[0:3]]; ok && length >= 3 {
-		//	ons = val
-		//	oOffset = 3
-		//} else if val, ok := onsets[word[0:2]]; ok && length >= 2 {
-		//	ons = val
-		//	oOffset = 2
-		//} else if val, ok := onsets[word[0:1]]; ok {
-		//	ons = val
-		//	oOffset = 1
-		//}
-
-		if length >= 3 {
-			if val, ok := onsets[word[0:3]]; ok {
-				ons = val
-				oOffset = 3
-			} else if val, ok := onsets[word[0:2]]; ok {
-				ons = val
-				oOffset = 2
-			} else if val, ok := onsets[word[0:1]]; ok {
-				ons = val
-				oOffset = 1
-			}
-		} else if length == 2 {
-			if val, ok := onsets[word[0:2]]; ok {
-				ons = val
-				oOffset = 2
-			} else if val, ok := onsets[word[0:1]]; ok {
-				ons = val
-				oOffset = 1
-			}
-		} else if length == 1 {
-			if val, ok := onsets[word[0:1]]; ok {
-				ons = val
-				oOffset = 1
-			}
-		}
-		// Optional: Add a default case if no match is found
-		if oOffset == 0 { // Assuming oOffset starts at 0 if unset
-			ons = ""    // Default value (adjust based on your needs)
-			oOffset = 0 // Or some other default
-		}
-
-		if val, ok := codas[word[length-2:length]]; ok && length >= 2 {
-			cod = val
-			cOffset = 2
-		} else if val, ok := codas[word[length-1:length]]; ok {
-			cod = val
-			cOffset = 1
-		}
-
-		nucl := word[oOffset : length-cOffset]
-
-		if oOffset == 0 {
-			ons = "ʔ"
-		}
-
-		if val, ok := qu[word]; ok {
-			ons = string(val[0])
-			nuc = string(val[len(val)-1])
-			if len(val) > 2 {
-				gli = lvGli
-			}
-		}
-
-		if _, ok := gi[word[0:2]]; ok && length >= 2 {
-			switch word {
-			case "giền":
-				nucl = "â"
-			default:
-				if length == 2 || (length == 3 && strings.ContainsAny(word[2:3], "nm")) {
-					nucl = "i"
-				} else if _, ok := nuclei[nucl]; ok && strings.ContainsAny(word[2:3], "êếềểễệ") {
-					nucl = "iê"
-				}
-			}
-			ons = onsets["gi"]
-		}
-
-		if val, ok := nuclei[nucl]; ok {
-			nuc = val
-		} else if val, ok := onglides[nucl]; ok {
-			nuc = val
-			if ons != "ʔ" {
-				ons += lvGli
-			} else {
-				ons = "w"
-			}
-		} else if val, ok := onoffglides[nucl]; ok {
-			if ons != "ʔ" {
-				ons += lvGli
-			} else {
-				ons = "w"
-			}
-			nuc = val[0 : len(val)-1]
-			cod = string(val[len(val)-1])
-		} else if val, ok := offglides[nucl]; ok {
-			cod = string(val[len(val)-1])
-			nuc = val[0 : len(val)-1]
-		} else {
-			return "", "", "", "", ""
-		}
-
-		if len(ons) >= 2 && string(ons[len(ons)-1]) == lvGli {
-			gli = lvGli
-			ons = ons[0 : len(ons)-1]
-		}
-
-		var toneList []string
-		for i := 0; i < length; i++ {
-			if val, ok := tones[string(word[i])]; ok {
-				toneList = append(toneList, val)
-			}
-		}
-		if len(toneList) > 0 {
-			ton = toneList[len(toneList)-1]
-		} else {
-			ton = "A1"
-		}
-		if ton == "B1" && strings.ContainsAny(cod, "ptck") {
-			ton = "D1"
-		}
-		if ton == "B2" && strings.ContainsAny(cod, "ptck") {
-			ton = "D2"
-		}
-
-		if eight {
-			ton = eightTones[ton]
-		} else if chao {
-			ton = chaoTones[ton]
-		} else if !nosuper {
-			ton = gedneySuper[ton]
-		}
-
-		if glottal && ons == "ʔ" {
-			ons = ""
-		}
-
-		if nuc == "aː" {
-			if cod == "c" || cod == "ɲ" {
-				nuc = "ɛ"
-			}
-		}
-
-		if dialect != "o" {
-			if strings.ContainsAny(cod, "ŋk") {
-				if nuc == "ɛ" {
-					nuc = "ɛː"
-				}
-				if nuc == "e" {
-					nuc = "eː"
-				}
-			}
-		} else {
-			if word[0:2] == "gi" {
-				ons = "ʑ"
-			}
-			if ons == "j" {
-				ons = "z"
-			}
-		}
-
-		if dialect == "n" || dialect == "o" {
-			if cod == "c" {
-				cod = "k"
-			}
-			if cod == "ɲ" {
-				cod = "ŋ"
-			}
-		}
-
-		if dialect == "n" {
-			switch ons {
-			case "j", "r":
-				ons = "z"
-			case "c", "ʈ":
-				ons = "tɕ"
-			case "ʂ":
-				ons = "s"
-			}
-
-			if !phonemic {
-				if strings.ContainsAny(cod, "kŋ") {
-					if strings.ContainsAny(nuc, "eɛi") {
-						if cod == "k" {
-							cod = palPlo
-						}
-						if cod == "ŋ" {
-							cod = palNas
-						}
-					} else if strings.ContainsAny(nuc, "uɔo") && word != "quốc" {
-						if cod == "k" {
-							cod = ldPlo
-						}
-						if cod == "ŋ" {
-							cod = ldNas
-						}
-					}
-				}
-
-				if cod == palNas || cod == palPlo {
-					if nuc == "ɛ" {
-						nuc = "a"
-					}
-				}
-
-				if len(nuc) == 1 && !strings.ContainsAny(nuc, "aə") {
-					if (len(cod) == 1 && nuc != "ɨ") || len(cod) == 0 {
-						nuc += "ː"
-					}
-				}
-			} else {
-				if len(cod) == 0 && strings.ContainsAny(nuc, "aːəː") {
-					if nuc == "aː" {
-						nuc = "a"
-					}
-					if nuc == "əː" {
-						nuc = "ə"
-					}
-				}
-			}
-		} else if dialect == "s" || dialect == "c" {
-			if ons == "z" {
-				ons = "j"
-			}
-			if ons == "k" && gli == lvGli {
-				ons = "w"
-				gli = ""
-			}
-			if ons == "ɣ" {
-				ons = "ɡ"
-			}
-
-			if len(cod) > 0 && strings.ContainsAny(nuc, "iəuəɨə") {
-				switch nuc {
-				case "iə":
-					nuc = "iː"
-				case "ɨə":
-					nuc = "ɨː"
-				case "uə":
-					nuc = "uː"
-				}
-			}
-
-			if nuc == "ɔ" && strings.ContainsAny(cod, "nt") {
-				nuc = "ɔː"
-			}
-			if nuc == "o" && strings.ContainsAny(cod, "ŋk") {
-				nuc = "ɔ"
-			}
-
-			if nuc == "ɛ" && strings.ContainsAny(cod, "nt") {
-				if cod == "n" {
-					cod = "ŋ"
-				}
-				nuc = "ɛː"
-			}
-
-			if len(cod) > 0 && len(nuc) == 2 {
-				if cod == "n" {
-					cod = "ŋ"
-				}
-				if cod == "t" {
-					cod = "k"
-				}
-			}
-
-			if len(cod) > 0 && strings.ContainsAny(nuc, "ɨəauo") {
-				if cod == "n" {
-					cod = "ŋ"
-				}
-				if cod == "t" {
-					cod = "k"
-				}
-			}
-
-			if len(cod) > 0 && strings.ContainsAny(nuc, "ieɛ") {
-				if cod == "ŋ" {
-					cod = "n"
-				}
-				if cod == "k" {
-					cod = "t"
-				}
-			}
-
-			if strings.ContainsAny(cod, "ɲc") {
-				if cod == "ɲ" {
-					cod = "n"
-				}
-				if cod == "c" {
-					cod = "t"
-				}
-			}
-
-			if !phonemic {
-				if ons == "ʂ" {
-					ons = "s"
-				}
-
-				if strings.ContainsAny(cod, "nt") {
-					switch nuc {
-					case "i":
-						nuc = "ɨ"
-					case "ɛ":
-						nuc = "a"
-					case "e":
-						nuc = "əː"
-					}
-				}
-
-				if nuc == "u" && strings.ContainsAny(cod, "mp") {
-					nuc = "ɨ"
-				}
-
-				if strings.ContainsAny(nuc, "eɛoɔ") {
-					switch nuc {
-					case "e":
-						nuc = "eː"
-					case "ɛ":
-						nuc = "ɛː"
-					case "o":
-						if !strings.ContainsAny(cod, "ŋk") {
-							nuc = "oː"
-						}
-					case "ɔ":
-						if !strings.ContainsAny(cod, "ŋk") {
-							nuc = "ɔː"
-						}
-					}
-				}
-
-				if strings.ContainsAny(nuc, "uɔoː") && strings.ContainsAny(cod, "ŋk") {
-					if cod == "ŋ" {
-						cod = ldNas
-					}
-					if cod == "k" {
-						cod = ldPlo
-					}
-				}
-			}
-		}
-
-		if dialect != "o" && phonemic && len(cod) == 0 && strings.ContainsAny(nuc, "aːəː") {
-			if nuc == "aː" {
-				nuc = "a"
-			}
-			if nuc == "əː" {
-				nuc = "ə"
-			}
-		}
-
-		return ons, gli, nuc, cod, ton
-	}
-
-	return "", "", "", "", ""
+	// Join the converted words with a space
+	return strings.Join(converted, " ")
 }
 
-func Convert(word string, dialect string, chao bool, eight bool, nosuper bool, glottal bool, phonemic bool, delimit string) string {
+// ConvertCustomize converts a Vietnamese word to IPA with a delimiter
+func ConvertCustomize(word string, glottal, palatals bool, delimit string) string {
 	word = strings.ToLower(word)
-	ons, gli, nuc, cod, ton := trans(word, dialect, chao, eight, nosuper, glottal, phonemic)
-	if ons == "" && gli == "" && nuc == "" && cod == "" && ton == "" {
+	ons, nuc, cod, ton := Trans(word, glottal, palatals)
+	if ons == "" && nuc == "" && cod == "" && ton == "" {
 		return "[" + word + "]"
 	}
-	parts := []string{ons, gli, nuc, cod, ton}
+	parts := []string{ons, nuc, cod, ton}
 	var filtered []string
-	for _, part := range parts {
-		if part != "" {
-			filtered = append(filtered, part)
+	for _, p := range parts {
+		if p != "" {
+			filtered = append(filtered, p)
 		}
 	}
 	return delimit + strings.Join(filtered, delimit) + delimit
 }
 
-func Run() {
-	dialect := flag.String("d", "n", "Specify dialect region (Northern=n, Central=c, Southern=s) or spelling pronunciation (o)")
-	chao := flag.Bool("c", false, "Phonetize tones as Chao values")
-	glottal := flag.Bool("g", false, "No glottal stops in underlying forms")
-	eight := flag.Bool("8", false, "Encode tones as 1-8")
-	nosuper := flag.Bool("n", false, "No superscripts anywhere")
-	phonemic := flag.Bool("p", false, "Underlying transcriptions after Pham (2006)")
-	delimit := flag.String("m", "", "Produce delimited output")
-	outputOrtho := flag.String("o", "", "Output orthography as well as IPA")
-	tokenize := flag.Bool("t", false, "Preserve underscores or hyphens in tokenized inputs")
-	flag.Parse()
+// Trans converts a Vietnamese word to its phonetic components based on options
+func Trans(word string, glottal, palatals bool) (string, string, string, string) {
+	// Use custom maps directly
+	onsets := CusOnsets
+	nuclei := CusNuclei
+	codasMap := CusCodasMap
+	onglides := CusOnglides
+	offglides := CusOffglides
+	onoffglides := CusOnoffglides
+	//specialCases := CusSpecialRhyme
+	qu := CusQu
+	gi := CusGi
+	tones := CusTonesP
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "" {
-			continue
-		}
+	//fmt.Println("specialCases", specialCases)
+	ons_ipa, nuc_ipa, cod_ipa, ton_ipa := "", "", "", "1" // Default tone is "1"
+	oOffset, cOffset := 0, 0
+	l := len(word)
 
-		compound := ""
-		ortho := ""
-		words := strings.Fields(line)
-		var filteredWords []string
-		for _, word := range words {
-			if len(word) > 0 && word != "-" && word != "_" {
-				filteredWords = append(filteredWords, word)
-			}
-		}
+	if l > 0 {
+		ons_ipa, oOffset = DetectOnset(l, word, onsets)
+		cod_ipa, cOffset = DetectConsotantCoda(l, word, codasMap)
+		ons_ipa, nuc_ipa, cod_ipa = DetectEdgeCases(gi, word, l, ons_ipa, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod_ipa, true)
+		ton_ipa = DetecTone(tones, word, l, oOffset, cOffset)
 
-		for i, word := range filteredWords {
-			ortho += word
-			cleanWord := strings.TrimFunc(word, func(r rune) bool {
-				return unicode.IsPunct(r)
-			})
-			cleanWord = strings.ToLower(cleanWord)
-
-			var seq string
-			if *tokenize && (strings.Contains(word, "-") || strings.Contains(word, "_")) {
-				parts := strings.FieldsFunc(cleanWord, func(r rune) bool {
-					return r == '-' || r == '_'
-				})
-				delimiters := strings.FieldsFunc(cleanWord, func(r rune) bool {
-					return !(r == '-' || r == '_')
-				})
-				if len(delimiters) < len(parts) {
-					delimiters = append(delimiters, "")
-				}
-				var ipa []string
-				for _, part := range parts {
-					ipa = append(ipa, strings.TrimSpace(Convert(part, *dialect, *chao, *eight, *nosuper, *glottal, *phonemic, *delimit)))
-				}
-				seq = ""
-				for j := range ipa {
-					seq += ipa[j] + delimiters[j]
-				}
-			} else {
-				seq = strings.TrimSpace(Convert(cleanWord, *dialect, *chao, *eight, *nosuper, *glottal, *phonemic, *delimit))
-			}
-
-			if len(filteredWords) >= 2 {
-				ortho += " "
-			}
-			if i < len(filteredWords)-1 {
-				seq += " "
-			}
-			compound += seq
-		}
-
-		if ortho != "" {
-			ortho = strings.TrimSpace(ortho)
-			if *outputOrtho != "" {
-				fmt.Print(ortho, *outputOrtho)
-			}
-			fmt.Println(compound)
-		}
 	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
-		os.Exit(1)
-	}
+	return ons_ipa, nuc_ipa, cod_ipa, ton_ipa
 }
 
-// RunWithInput processes a string input directly without terminal or scanner.
-func RunWithInput(input string, dialect string, chao bool, eight bool, nosuper bool, glottal bool, phonemic bool, delimit string, outputOrtho string, tokenize bool) string {
-	if input == "" {
-		return ""
+func DetectOnset(l int, word string, onsets map[string]string) (string, int) {
+	var ons string
+	var oOffset int
+	// Onset detection
+	if l >= 3 && onsets[word[0:3]] != "" {
+		ons = onsets[word[0:3]]
+		oOffset = 3
+	} else if l >= 2 && onsets[word[0:2]] != "" {
+		ons = onsets[word[0:2]]
+		oOffset = 2
+	} else if onsets[word[0:1]] != "" {
+		ons = onsets[word[0:1]]
+		oOffset = 1
 	}
 
-	compound := ""
-	ortho := ""
-	words := strings.Fields(input) // Split input into words
-	var filteredWords []string
-	for _, word := range words {
-		if len(word) > 0 && word != "-" && word != "_" {
-			filteredWords = append(filteredWords, word)
+	//fmt.Printf("line 92: từ: %s || ons: %s || oOffset: %v\n", word, ons, oOffset)
+	return ons, oOffset
+}
+
+func DetectConsotantCoda(l int, word string, codas map[string]string) (string, int) {
+	var cod string
+	var cOffset int
+	if l >= 2 && codas[word[l-2:l]] != "" {
+		cod = codas[word[l-2:l]]
+		cOffset = 2
+	} else if codas[word[l-1:l]] != "" {
+		cod = codas[word[l-1:l]]
+		cOffset = 1
+	}
+	// fmt.Printf("line 110: từ: %s || cod: %s\n", word, cod)
+	return cod, cOffset
+}
+
+func DetecTone(tones map[string]int, word string, l int, oOffset int, cOffset int) string {
+	// Tones detection
+	var ton string
+	if tones != nil {
+		toneChar := ""
+		nucl := word[oOffset : l-cOffset]
+		for _, r := range nucl {
+			s := string(r)
+			if _, ok := tones[s]; ok {
+				toneChar = s
+				break
+			}
+		}
+		if toneChar != "" {
+			ton = fmt.Sprintf("%d", tones[toneChar])
+			return ton
 		}
 	}
+	return "1"
+}
+func DetectEdgeCases(
+	gi map[string]string,
+	word string,
+	wordLen int,
+	initialOnset string,
+	onsets, nuclei, qu, onglides, onoffglides, offglides map[string]string,
+	oOffset, cOffset int,
+	coda string,
+	glottal bool,
+) (string, string, string) {
+	var nucleus, onset = "", initialOnset
 
-	for i, word := range filteredWords {
-		ortho += word
-		cleanWord := strings.TrimFunc(word, func(r rune) bool {
-			return unicode.IsPunct(r)
-		})
-		cleanWord = strings.ToLower(cleanWord)
+	// Special case: word starts with specific sequence, has a coda, and length is exactly 3
+	if gi[word[:2]] != "" && coda != "" && wordLen == 3 {
+		return "z", "i", coda
+	}
 
-		var seq string
-		if tokenize && (strings.Contains(word, "-") || strings.Contains(word, "_")) {
-			parts := strings.FieldsFunc(cleanWord, func(r rune) bool {
-				return r == '-' || r == '_'
-			})
-			delimiters := strings.FieldsFunc(cleanWord, func(r rune) bool {
-				return !(r == '-' || r == '_')
-			})
-			if len(delimiters) < len(parts) {
-				delimiters = append(delimiters, "")
-			}
-			var ipa []string
-			for _, part := range parts {
-				ipa = append(ipa, strings.TrimSpace(Convert(part, dialect, chao, eight, nosuper, glottal, phonemic, delimit)))
-			}
-			seq = ""
-			for j := range ipa {
-				seq += ipa[j] + delimiters[j]
-			}
+	// Extract nucleus part
+	nucleusPart := word[oOffset : wordLen-cOffset]
+
+	switch {
+	case nuclei[nucleusPart] != "":
+		if oOffset == 0 && glottal && onsets[word[:1]] == "" {
+			onset = "ʔ" + nuclei[nucleusPart]
 		} else {
-			seq = strings.TrimSpace(Convert(cleanWord, dialect, chao, eight, nosuper, glottal, phonemic, delimit))
+			nucleus = nuclei[nucleusPart]
 		}
 
-		if len(filteredWords) >= 2 {
-			ortho += " "
+	case onglides[nucleusPart] != "" && onset != "kw":
+		nucleus = onglides[nucleusPart]
+		if onset != "" {
+			onset += "w"
+		} else {
+			onset = "w"
 		}
-		if i < len(filteredWords)-1 {
-			seq += " "
+
+	case onglides[nucleusPart] != "" && onset == "kw":
+		nucleus = onglides[nucleusPart]
+
+	case onoffglides[nucleusPart] != "":
+		combined := onoffglides[nucleusPart]
+		nucleus = combined[:len(combined)-1]
+		coda = string(combined[len(combined)-1])
+		if onset != "kw" {
+			if onset != "" {
+				onset += "w"
+			} else {
+				onset = "w"
+			}
 		}
-		compound += seq
+
+	case offglides[nucleusPart] != "":
+		combined := offglides[nucleusPart]
+		nucleus = combined[:len(combined)-1]
+		coda = string(combined[len(combined)-1])
+
+	case gi[word] != "":
+		value := gi[word]
+		onset = string(value[0])
+		nucleus = string(value[1])
+
+	case qu[word] != "":
+		value := qu[word]
+		onset = value[:len(value)-1]
+		nucleus = string(value[len(value)-1])
+
+	default:
+		return "", "", "" // Non-Vietnamese or unrecognized word
 	}
 
-	if ortho != "" {
-		ortho = strings.TrimSpace(ortho)
-		if outputOrtho != "" {
-			return ortho + outputOrtho + compound
+	runes := []rune(word)
+	if len(runes) >= 3 {
+		specialEnding := string(runes[len(runes)-3:])
+		flag := contains(SpecialRhyme, specialEnding)
+		if flag {
+			//fmt.Printf("specialEnding: %s || flag: %t\n", specialEnding, flag)
+			nucleus = "ɛ"
 		}
-		return compound
+
 	}
 
-	return ""
+	//specialCases := nucleus + coda
+
+	//fmt.Printf("edgecases: line 204: từ: %s||nuc %s || coda: %s ||flag: %t || special : %s\n", word, nucleus, coda, flag, specialCases)
+
+	//fmt.Printf("edgecases: line 204: từ: %s||nuc %s || coda: %s\n", word, nucleus, coda)
+	return onset, nucleus, coda
+}
+
+// contains checks if a string is in a slice
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
