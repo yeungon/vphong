@@ -63,7 +63,7 @@ func Trans(word string, glottal, palatals bool) (string, string, string, string)
 	if l > 0 {
 		ons_ipa, oOffset = DetectOnset(l, word, onsets)
 		cod_ipa, cOffset = DetectConsotantCoda(l, word, codasMap)
-		ons_ipa, nuc_ipa, cod_ipa = DetectEdgeCases(gi, word, l, ons_ipa, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod_ipa, true)
+		ons_ipa, nuc_ipa, cod_ipa = DetectNucleusEdgeCases(gi, word, l, ons_ipa, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod_ipa, true)
 		ton_ipa = DetecTone(tones, word, l, oOffset, cOffset)
 
 	}
@@ -123,7 +123,7 @@ func DetecTone(tones map[string]int, word string, l int, oOffset int, cOffset in
 	}
 	return "1"
 }
-func DetectEdgeCases(
+func DetectNucleusEdgeCases(
 	gi map[string]string,
 	word string,
 	wordLen int,
@@ -145,11 +145,18 @@ func DetectEdgeCases(
 
 	switch {
 	case nuclei[nucleusPart] != "":
-		if oOffset == 0 && glottal && onsets[word[:1]] == "" {
-			onset = "ʔ" + nuclei[nucleusPart]
-		} else {
-			nucleus = nuclei[nucleusPart]
-		}
+		// if oOffset == 0 && glottal && onsets[word[:1]] == "" {
+		// 	onset = "ʔ" + nuclei[nucleusPart]
+		// } else {
+		// 	nucleus = nuclei[nucleusPart]
+		// }
+		//
+		// TODO : clean up
+		nucleus = nuclei[nucleusPart]
+
+		// fmt.Printf("word: %s - onsets[word[:1] %s\n", word, onsets[word[:1]])
+		// fmt.Println("Special case onset, nucleus", nucleus)
+		// fmt.Println("nucleusPart", nucleusPart)
 
 	case onglides[nucleusPart] != "" && onset != "kw":
 		nucleus = onglides[nucleusPart]

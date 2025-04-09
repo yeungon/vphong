@@ -60,6 +60,16 @@ func TestVphong2(t *testing.T) {
 			input:    "có thể xử lý những trường hợp chứa",
 			expected: "kɔ5 tʰe4 sɯ4 li5 ɲɯŋ3 ʈɯəŋ2 hɤp6 cɯə5",
 		},
+
+		{
+			input:    "an ang anh ảnh au ay á an ó",
+			expected: "an1 aŋ1 ɛŋ1 ɛŋ4 ăw1 ăj1 a5 an1 ɔ5",
+		},
+
+		{
+			input:    "anh em như thể tay chân",
+			expected: "ɛŋ1 ɛm1 ɲɯ1 tʰe4 tăj1 cɤ̆n1",
+		},
 	}
 
 	for _, tc := range testCases {
