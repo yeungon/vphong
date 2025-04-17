@@ -70,6 +70,11 @@ func TestVphong2(t *testing.T) {
 			input:    "anh em như thể tay chân",
 			expected: "ɛŋ1 ɛm1 ɲɯ1 tʰe4 tăj1 cɤ̆n1",
 		},
+
+		{
+			input:    "biểu biếu biến biển",
+			expected: "ɓiew4 ɓiew5 ɓien5 ɓien4",
+		},
 	}
 
 	for _, tc := range testCases {
