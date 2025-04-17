@@ -54,7 +54,6 @@ func TestVphong2(t *testing.T) {
 			input:    "Gió bấc và mặt trời cãi nhau xem ai mạnh mạng",
 			expected: "zɔ5 ɓɤ̆k5 va2 măt6 ʈɤj2 kaj3 ɲăw1 sɛm1 aj1 mɛŋ6 maŋ6",
 		},
-
 		{
 			//Retrieved from https://github.com/v-nhandt21/Viphoneme
 			input:    "có thể xử lý những trường hợp chứa",
@@ -74,6 +73,11 @@ func TestVphong2(t *testing.T) {
 		{
 			input:    "biểu biếu biến biển",
 			expected: "ɓiew4 ɓiew5 ɓien5 ɓien4",
+		},
+
+		{
+			input:    "gì gà già giếng giỏ",
+			expected: "zi2 ɣa2 za2 zieŋ5 zɔ4",
 		},
 	}
 

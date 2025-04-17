@@ -64,7 +64,7 @@ var CusNuclei = map[string]string{
 	"y": "i", "ý": "i", "ỳ": "i", "ỷ": "i", "ỹ": "i", "ỵ": "i",
 	"eo": "ɛw", "éo": "ɛw", "èo": "ɛw", "ẻo": "ɛw", "ẽo": "ɛw", "ẹo": "ɛw",
 	"êu": "ew", "ếu": "ew", "ều": "ew", "ểu": "ew", "ễu": "ew", "ệu": "ew",
-	"ia": "iɛ", "ía": "iɛ", "ìa": "iɛ", "ỉa": "iɛ", "ĩa": "iɛ", "ịa": "iɛ",
+	"ia": "ie", "ía": "ie", "ìa": "ie", "ỉa": "ie", "ĩa": "ie", "ịa": "ie",
 	"iê": "ie", "iế": "ie", "iể": "ie", "iề": "ie", "iễ": "ie", "iệ": "ie",
 	"oo": "ɔ", "óo": "ɔ", "òo": "ɔ", "ỏo": "ɔ", "õo": "ɔ", "ọo": "ɔ",
 	"oó": "ɔ", "oò": "ɔ", "oỏ": "ɔ", "oõ": "ɔ", "oọ": "ɔ",
@@ -140,7 +140,7 @@ var CusOnoffglides = map[string]string{
 }
 
 // CusCodas maps Vietnamese codas to their IPA equivalents
-var CusCodasMap = map[string]string{
+var CusCodasMapConsonant = map[string]string{
 	"p": "p", "t": "t", "c": "k", "m": "m", "n": "n", "ng": "ŋ", "nh": "ŋ", "ch": "k",
 }
 

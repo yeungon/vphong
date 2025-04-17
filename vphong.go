@@ -2,51 +2,15 @@ package vphong
 
 import (
 	"fmt"
-	"strings"
+	"unicode/utf8"
 )
-
-// ConvertSentence converts a Vietnamese sentence to IPA with a delimiter for each word
-func ConvertSentence(sentence string, glottal, palatals bool, delimit string) string {
-	// Split the sentence into words
-	words := strings.Fields(sentence)
-	if len(words) == 0 {
-		return ""
-	}
-
-	// Convert each word to IPA
-	var converted []string
-	for _, word := range words {
-		ipa := ConvertCustomize(word, glottal, palatals, delimit)
-		converted = append(converted, ipa)
-	}
-
-	// Join the converted words with a space
-	return strings.Join(converted, " ")
-}
-
-// ConvertCustomize converts a Vietnamese word to IPA with a delimiter
-func ConvertCustomize(word string, glottal, palatals bool, delimit string) string {
-	word = strings.ToLower(word)
-	ons, nuc, cod, ton := Trans(word, glottal, palatals)
-	if ons == "" && nuc == "" && cod == "" && ton == "" {
-		return "[" + word + "]"
-	}
-	parts := []string{ons, nuc, cod, ton}
-	var filtered []string
-	for _, p := range parts {
-		if p != "" {
-			filtered = append(filtered, p)
-		}
-	}
-	return delimit + strings.Join(filtered, delimit) + delimit
-}
 
 // Trans converts a Vietnamese word to its phonetic components based on options
 func Trans(word string, glottal, palatals bool) (string, string, string, string) {
 	// Use custom maps directly
 	onsets := CusOnsets
 	nuclei := CusNuclei
-	codasMap := CusCodasMap
+	codasMap := CusCodasMapConsonant
 	onglides := CusOnglides
 	offglides := CusOffglides
 	onoffglides := CusOnoffglides
@@ -58,57 +22,70 @@ func Trans(word string, glottal, palatals bool) (string, string, string, string)
 	//fmt.Println("specialCases", specialCases)
 	ons_ipa, nuc_ipa, cod_ipa, ton_ipa := "", "", "", "1" // Default tone is "1"
 	oOffset, cOffset := 0, 0
+	runeLength := utf8.RuneCountInString(word)
 	l := len(word)
+	// fmt.Println("word, len, RuneCountInString", word, l, runeLength)
 
+	l = runeLength
 	if l > 0 {
 		ons_ipa, oOffset = DetectOnset(l, word, onsets)
-		cod_ipa, cOffset = DetectConsotantCoda(l, word, codasMap)
+		cod_ipa, cOffset = DetectCoda(l, word, codasMap)
+		//fmt.Println("cod_ipa, cOffset", cod_ipa, cOffset)
 		ons_ipa, nuc_ipa, cod_ipa = DetectNucleusEdgeCases(gi, word, l, ons_ipa, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod_ipa, true)
 		ton_ipa = DetecTone(tones, word, l, oOffset, cOffset)
 
 	}
+	//fmt.Println("ons_ipa, nuc_ipa, cod_ipa", ons_ipa, nuc_ipa, cod_ipa)
 	return ons_ipa, nuc_ipa, cod_ipa, ton_ipa
 }
 
 func DetectOnset(l int, word string, onsets map[string]string) (string, int) {
 	var ons string
 	var oOffset int
-	// Onset detection
-	if l >= 3 && onsets[word[0:3]] != "" {
-		ons = onsets[word[0:3]]
+	// Convert text to a slice of rune so that we can manage it.
+	runes := []rune(word)
+	if l >= 3 && onsets[string(runes[0:3])] != "" {
+		ons = onsets[string(runes[0:3])]
 		oOffset = 3
-	} else if l >= 2 && onsets[word[0:2]] != "" {
-		ons = onsets[word[0:2]]
+	} else if l >= 2 && onsets[string(runes[0:2])] != "" {
+		ons = onsets[string(runes[0:2])]
 		oOffset = 2
-	} else if onsets[word[0:1]] != "" {
-		ons = onsets[word[0:1]]
+	} else if onsets[string(runes[0:1])] != "" {
+		ons = onsets[string(runes[0:1])]
 		oOffset = 1
 	}
-
-	//fmt.Printf("line 92: từ: %s || ons: %s || oOffset: %v\n", word, ons, oOffset)
 	return ons, oOffset
 }
 
-func DetectConsotantCoda(l int, word string, codas map[string]string) (string, int) {
+func DetectCoda(l int, word string, codas map[string]string) (string, int) {
 	var cod string
 	var cOffset int
-	if l >= 2 && codas[word[l-2:l]] != "" {
-		cod = codas[word[l-2:l]]
-		cOffset = 2
-	} else if codas[word[l-1:l]] != "" {
-		cod = codas[word[l-1:l]]
-		cOffset = 1
+	runes := []rune(word)
+	length := len(runes)
+
+	if l >= 2 {
+		twoLetter := string(runes[length-2 : length])
+		oneLetter := string(runes[length-1 : length])
+		if value, ok := codas[twoLetter]; ok {
+			cod = value
+			cOffset = 2
+		} else if value, ok := codas[oneLetter]; ok {
+			cod = value
+			cOffset = 1
+		}
 	}
-	// fmt.Printf("line 110: từ: %s || cod: %s\n", word, cod)
+
+	//fmt.Printf("line 71: length: %v, từ: %s || cod: %s || twoLetter %v, oneLetter: %v\n", l, word, cod, twoLetter, oneLetter)
 	return cod, cOffset
 }
 
 func DetecTone(tones map[string]int, word string, l int, oOffset int, cOffset int) string {
 	// Tones detection
+	runes := []rune(word)
 	var ton string
 	if tones != nil {
 		toneChar := ""
-		nucl := word[oOffset : l-cOffset]
+		nucl := string(runes[oOffset : l-cOffset])
 		for _, r := range nucl {
 			s := string(r)
 			if _, ok := tones[s]; ok {
@@ -134,30 +111,21 @@ func DetectNucleusEdgeCases(
 	glottal bool,
 ) (string, string, string) {
 	var nucleus, onset = "", initialOnset
+	runes := []rune(word)
 
-	// Special case: word starts with specific sequence, has a coda, and length is exactly 3
-	if gi[word[:2]] != "" && coda != "" && wordLen == 3 {
+	//fmt.Println("coda, runes[:2], wordLen", coda, string(runes[:2]), wordLen)
+	if gi[string(runes[:2])] != "" && coda == "" && wordLen == 2 {
 		return "z", "i", coda
 	}
 
-	// Extract nucleus part
-	nucleusPart := word[oOffset : wordLen-cOffset]
+	if word == "giếng" || word == "giềng" {
+		return "z", "ie", coda
+	}
 
+	nucleusPart := string(runes[oOffset : wordLen-cOffset])
 	switch {
 	case nuclei[nucleusPart] != "":
-		// if oOffset == 0 && glottal && onsets[word[:1]] == "" {
-		// 	onset = "ʔ" + nuclei[nucleusPart]
-		// } else {
-		// 	nucleus = nuclei[nucleusPart]
-		// }
-		//
-		// TODO : clean up
 		nucleus = nuclei[nucleusPart]
-
-		// fmt.Printf("word: %s - onsets[word[:1] %s\n", word, onsets[word[:1]])
-		// fmt.Println("Special case onset, nucleus", nucleus)
-		// fmt.Println("nucleusPart", nucleusPart)
-
 	case onglides[nucleusPart] != "" && onset != "kw":
 		nucleus = onglides[nucleusPart]
 		if onset != "" {
@@ -197,34 +165,16 @@ func DetectNucleusEdgeCases(
 		nucleus = string(value[len(value)-1])
 
 	default:
-		return "", "", "" // Non-Vietnamese or unrecognized word
+		return onset, "", "" // Non-Vietnamese or unrecognized word
 	}
 
-	runes := []rune(word)
 	if len(runes) >= 3 {
 		specialEnding := string(runes[len(runes)-3:])
 		flag := contains(SpecialRhyme, specialEnding)
 		if flag {
-			//fmt.Printf("specialEnding: %s || flag: %t\n", specialEnding, flag)
 			nucleus = "ɛ"
 		}
 
 	}
-
-	//specialCases := nucleus + coda
-
-	//fmt.Printf("edgecases: line 204: từ: %s||nuc %s || coda: %s ||flag: %t || special : %s\n", word, nucleus, coda, flag, specialCases)
-
-	//fmt.Printf("edgecases: line 204: từ: %s||nuc %s || coda: %s\n", word, nucleus, coda)
 	return onset, nucleus, coda
-}
-
-// contains checks if a string is in a slice
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
 }
