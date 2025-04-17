@@ -14,25 +14,17 @@ func Trans(word string, glottal, palatals bool) (string, string, string, string)
 	onglides := CusOnglides
 	offglides := CusOffglides
 	onoffglides := CusOnoffglides
-	//specialCases := CusSpecialRhyme
 	qu := CusQu
 	gi := CusGi
 	tones := CusTonesP
-
-	//fmt.Println("specialCases", specialCases)
 	ons_ipa, nuc_ipa, cod_ipa, ton_ipa := "", "", "", "1" // Default tone is "1"
 	oOffset, cOffset := 0, 0
 	runeLength := utf8.RuneCountInString(word)
-	l := len(word)
-	// fmt.Println("word, len, RuneCountInString", word, l, runeLength)
-
-	l = runeLength
-	if l > 0 {
-		ons_ipa, oOffset = DetectOnset(l, word, onsets)
-		cod_ipa, cOffset = DetectCoda(l, word, codasMap)
-		//fmt.Println("cod_ipa, cOffset", cod_ipa, cOffset)
-		ons_ipa, nuc_ipa, cod_ipa = DetectNucleusEdgeCases(gi, word, l, ons_ipa, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod_ipa, true)
-		ton_ipa = DetecTone(tones, word, l, oOffset, cOffset)
+	if runeLength > 0 {
+		ons_ipa, oOffset = DetectOnset(runeLength, word, onsets)
+		cod_ipa, cOffset = DetectCoda(runeLength, word, codasMap)
+		ons_ipa, nuc_ipa, cod_ipa = DetectNucleusEdgeCases(gi, word, runeLength, ons_ipa, onsets, nuclei, qu, onglides, onoffglides, offglides, oOffset, cOffset, cod_ipa, true)
+		ton_ipa = DetecTone(tones, word, runeLength, oOffset, cOffset)
 
 	}
 	//fmt.Println("ons_ipa, nuc_ipa, cod_ipa", ons_ipa, nuc_ipa, cod_ipa)
