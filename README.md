@@ -1,7 +1,7 @@
 ## vPhong: a Vietnamese Phonetizer in Go
 
 ---
-Package: vPhong 0.1.7
+Package: vPhong 0.1.8
 
 Author: Vuong Nguyen
 

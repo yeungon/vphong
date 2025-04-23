@@ -79,6 +79,11 @@ func TestVphong2(t *testing.T) {
 			input:    "gì gà già giếng giỏ",
 			expected: "zi2 ɣa2 za2 zieŋ5 zɔ4",
 		},
+
+		{
+			input:    "mua buổi biển bánh uôi chuôi chuối chuỗi",
+			expected: "muo1 ɓuoj4 ɓien4 ɓɛŋ5 uoj1 cuoj1 cuoj5 cuoj3",
+		},
 	}
 
 	for _, tc := range testCases {

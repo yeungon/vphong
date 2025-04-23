@@ -115,6 +115,8 @@ func DetectNucleusEdgeCases(
 	}
 
 	nucleusPart := string(runes[oOffset : wordLen-cOffset])
+	// fmt.Println("gi[word]", gi[word])
+
 	switch {
 	case nuclei[nucleusPart] != "":
 		nucleus = nuclei[nucleusPart]

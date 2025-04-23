@@ -98,7 +98,7 @@ var CusOffglides = map[string]string{
 	"ưu": "ɯw", "ứu": "ɯw", "ừu": "ɯw", "ửu": "ɯw", "ữu": "ɯw", "ựu": "ɯw",
 	"iêu": "iew", "iếu": "iew", "iều": "iew", "iểu": "iew", "iễu": "iew", "iệu": "iew",
 	"yêu": "iew", "yếu": "iew", "yều": "iew", "yểu": "iew", "yễu": "iew", "yệu": "iew",
-	"uôi": "uəj", "uối": "uəj", "uồi": "uəj", "uổi": "uəj", "uỗi": "uəj", "uội": "uəj",
+	"uôi": "uoj", "uối": "uoj", "uồi": "uoj", "uổi": "uoj", "uỗi": "uoj", "uội": "uoj",
 	"ươi": "ɯəj", "ưới": "ɯəj", "ười": "ɯəj", "ưởi": "ɯəj", "ưỡi": "ɯəj", "ượi": "ɯəj",
 	"ươu": "ɯəw", "ướu": "ɯəw", "ườu": "ɯəw", "ưởu": "ɯəw", "ưỡu": "ɯəw", "ượu": "ɯəw",
 }
